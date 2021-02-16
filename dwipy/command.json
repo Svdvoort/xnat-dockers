@@ -1,0 +1,63 @@
+{
+    "name": "calculate-adc",
+    "description": "Calculate ADC values from DWI",
+    "version": "0.2.0",
+    "schema-version": "1.0",
+    "type": "docker",
+    "command-line": "python3 /usr/local/bin/calculate_adc.py --input_folder /input --output_folder /output",
+    "mounts": [
+        {
+            "name": "input-mount",
+            "writable": "false",
+            "path": "/input"
+        },
+        {
+            "name": "output-mount",
+            "writable": "true",
+            "path": "/output"
+        }
+    ],
+    "inputs": [],
+    "outputs": [
+        {
+            "name": "dwi-output",
+            "description": "The outputs from the DWI calculation",
+            "required": true,
+            "mount": "output-mount"
+        }
+    ],
+    "xnat": [
+        {
+            "name": "Calculate ADC from DWI",
+            "description": "Calculate ADC from DWI",
+            "contexts": ["xnat:imageScanData"],
+            "external-inputs": [
+              {
+                "name": "scan",
+                "description": "Input scan",
+                "type": "Scan",
+                "required": true
+              }
+            ],
+            "derived-inputs": [
+                {
+                    "name": "input-scan",
+                    "description": "The input scan's DICOM resource",
+                    "type": "Resource",
+                    "derived-from-wrapper-input": "scan",
+                    "provides-files-for-command-mount": "input-mount",
+                    "matcher": "@.label == 'DICOM'"
+                }
+            ],
+            "output-handlers": [
+                {
+                    "name": "dwi-resource",
+                    "type": "Resource",
+                    "accepts-command-output": "dwi-output",
+                    "as-a-child-of-wrapper-input": "scan",
+                    "label": "DERIVED"
+                }
+            ]
+        }
+    ]
+}
